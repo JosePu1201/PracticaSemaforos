@@ -1,0 +1,354 @@
+/* Variables de colores - Paleta de reglamento de tránsito */
+:root {
+    --red-light: #ff3b30;
+    --yellow-light: #ffcc00;
+    --green-light: #34c759;
+    --blue-traffic: #1a73e8;
+    --dark-asphalt: #2c3e50;
+    --light-gray: #f8f9fa;
+    --white: #ffffff;
+    --black: #000000;
+    --text-color: #2c3e50;
+    --error-color: #ff3b30;
+    --success-color: #34c759;
+    --warning-color: #ffcc00;
+}
+
+/* General Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    position: relative;
+    color: var(--text-color);
+    overflow-x: hidden;
+}
+
+/* Fondo con tema de tránsito */
+.traffic-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('https://img.freepik.com/free-vector/road-traffic-seamless-pattern_1284-7324.jpg');
+    background-size: cover;
+    opacity: 0.1;
+    z-index: -1;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(52, 199, 89, 0.2) 0%, rgba(26, 115, 232, 0.2) 50%, rgba(255, 204, 0, 0.2) 100%);
+    z-index: -1;
+}
+
+/* Semáforo */
+.traffic-light-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.traffic-light {
+    background-color: var(--dark-asphalt);
+    border-radius: 10px;
+    padding: 10px;
+    width: 70px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.light {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin: 5px 0;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.red {
+    background-color: var(--red-light);
+    box-shadow: 0 0 15px rgba(255, 59, 48, 0.4);
+}
+
+.yellow {
+    background-color: var(--yellow-light);
+    box-shadow: 0 0 15px rgba(255, 204, 0, 0.4);
+}
+
+.green {
+    background-color: var(--green-light);
+    box-shadow: 0 0 15px rgba(52, 199, 89, 0.4);
+}
+
+/* Login Container */
+.login-container {
+    background-color: var(--white);
+    border-radius: 16px;
+    padding: 35px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+    border-left: 4px solid var(--green-light);
+    border-right: 4px solid var(--red-light);
+    position: relative;
+    overflow: hidden;
+}
+
+.login-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 6px;
+    background: linear-gradient(90deg, var(--red-light), var(--yellow-light), var(--green-light));
+}
+
+.login-container::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 6px;
+    background: linear-gradient(90deg, var(--green-light), var(--yellow-light), var(--red-light));
+}
+
+.login-container:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+}
+
+/* Login Header */
+.login-header {
+    margin-bottom: 30px;
+}
+
+.login-header h2 {
+    color: var(--blue-traffic);
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.login-header p {
+    color: var(--text-color);
+}
+
+/* Form Elements */
+.form-group label {
+    font-weight: 600;
+    color: var(--text-color);
+    font-size: 0.95rem;
+}
+
+.input-group-text {
+    background-color: var(--light-gray);
+    border-right: none;
+    color: var(--blue-traffic);
+}
+
+.form-control {
+    border-left: none;
+    background-color: var(--light-gray);
+}
+
+.form-control:focus {
+    box-shadow: none;
+    border-color: var(--blue-traffic);
+}
+
+.form-control:focus + .input-group-text {
+    border-color: var(--blue-traffic);
+    color: var(--blue-traffic);
+}
+
+.toggle-password {
+    border-left: none;
+    background-color: var(--light-gray);
+    color: var(--text-color);
+}
+
+.toggle-password:hover {
+    color: var(--blue-traffic);
+}
+
+.toggle-password:focus {
+    box-shadow: none;
+}
+
+/* Login Button */
+.login-btn {
+    padding: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s;
+    background-color: var(--green-light);
+    border-color: var(--green-light);
+    color: white;
+}
+
+.login-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(52, 199, 89, 0.4);
+    background-color: #2db84f;
+    border-color: #2db84f;
+}
+
+/* Remember Me & Forgot Password */
+.form-check-input:checked {
+    background-color: var(--green-light);
+    border-color: var(--green-light);
+}
+
+.forgot-password {
+    color: var(--red-light);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.forgot-password:hover {
+    color: #d63322;
+    text-decoration: underline;
+}
+
+/* Login Divider */
+.login-divider {
+    position: relative;
+    text-align: center;
+    margin: 25px 0;
+}
+
+.login-divider::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, var(--red-light), var(--yellow-light), var(--green-light));
+}
+
+.login-divider span {
+    position: relative;
+    background-color: var(--white);
+    padding: 0 15px;
+    color: var(--text-color);
+    font-size: 0.95rem;
+}
+
+/* Social Login */
+.social-login {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 5px;
+}
+
+.social-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.social-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.google-btn {
+    border-color: #ea4335;
+    color: #ea4335;
+}
+
+.facebook-btn {
+    border-color: #3b5998;
+    color: #3b5998;
+}
+
+/* Register Link */
+.register-link {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid var(--light-gray);
+}
+
+.register-link p {
+    color: var(--text-color);
+    margin-bottom: 0;
+}
+
+.register-link a {
+    color: var(--blue-traffic);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.register-link a:hover {
+    color: #1555b6;
+    text-decoration: underline;
+}
+
+/* Form Validation */
+.is-invalid {
+    border-color: var(--error-color) !important;
+}
+
+.invalid-feedback {
+    display: none;
+    color: var(--error-color);
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+/* Animation */
+@keyframes shake {
+    0%, 100% {transform: translateX(0);}
+    10%, 30%, 50%, 70%, 90% {transform: translateX(-5px);}
+    20%, 40%, 60%, 80% {transform: translateX(5px);}
+}
+
+.shake {
+    animation: shake 0.5s;
+}
+
+/* Animación de semáforo */
+@keyframes traffic-light {
+    0%, 100% { box-shadow: 0 0 15px rgba(255, 59, 48, 0.7); }
+    33% { box-shadow: 0 0 15px rgba(255, 204, 0, 0.7); }
+    66% { box-shadow: 0 0 15px rgba(52, 199, 89, 0.7); }
+}
+
+.red {
+    animation: traffic-light 6s infinite;
+    animation-delay: 0s;
+}
+
+.yellow {
+    animation: traffic-light 6s infinite;
+    animation-delay: 2s;
+}
+
+.green {
+    animation: traffic-light 10s infinite;
+    animation-delay: 2s;
+}
