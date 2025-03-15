@@ -28,12 +28,12 @@
                     </div>
                     
                     <div class="login-form">
-                        <form id="loginForm" action="./Controller/login.php" method="post" role="form" class="FormCatElec" data-form="login">
+                        <form action="./Controller/login.php" method="post" role="form" class="FormCatElec" data-form="login">
                             <div class="form-group mb-3">
                                 <label for="username">Usuario</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="bi bi-person"></i></span>
-                                    <input type="text" class="form-control" id="username" placeholder="Ingresa tu nombre de usuario" required>
+                                    <input type="text" class="form-control" id="username"  name="nombre" placeholder="Ingresa tu nombre de usuario" required>
                                 </div>
                                 <div class="invalid-feedback" id="usernameError"></div>
                             </div>
@@ -42,7 +42,7 @@
                                 <label for="password">Contraseña</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                                    <input type="password" class="form-control" id="password" placeholder="Ingresa tu contraseña" required>
+                                    <input type="password" class="form-control" id="password" name="clave" placeholder="Ingresa tu contraseña" required>
                                     <button class="btn btn-outline-secondary toggle-password" type="button">
                                         <i class="bi bi-eye"></i>
                                     </button>
@@ -83,13 +83,27 @@
                 </div>
             </div>
         </div>
+        <footer class="footer mt-auto">
+                <div class="container text-center">
+                    <div class="row">
+                        <div class="col-12">
+                            <p class="mb-0">
+                                © 2024 Sistema de Tránsito. Todos los derechos reservados.
+                                <span class="d-block d-md-inline mt-2 mt-md-0">
+                                    <a href="#" class="text-light mx-2">Políticas de Privacidad</a> |
+                                    <a href="#" class="text-light mx-2">Términos de Servicio</a>
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </footer>
     </div>
-
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <!-- Bootstrap JS Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Custom JS -->
-    <script src="js/script.js"></script>
+    <script src="js/script.js"> </script>
 </body>
 </html>
