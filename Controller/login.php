@@ -26,7 +26,7 @@
                     $_SESSION['user']=$nombre;
                     $_SESSION['pass']=$clave;
                     $_SESSION['UserType']="Monitor";
-                    echo '<script> location.href="../View/admin.php"; </script>';
+                    echo '<script> location.href="../View/monitor.php"; </script>';
                         break;
                 case '3':
                     $_SESSION['user']=$nombre;
