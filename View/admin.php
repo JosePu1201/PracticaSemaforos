@@ -21,12 +21,14 @@
                 <a class="navbar-brand" href="#">
                     <i class="fas fa-traffic-light"></i>
                     Sistema de Tránsito
-                    <span class="admin-badge">Administrador </span>
+                    
                     <?php
+                    session_start();
+                    include '../Model/configServer.php';
+                    include '../Model/consulSQL.php';
+                    $nombre = $_SESSION["user"];
                     echo '
-                        <a href="#"  id="button-login-xs" class="">
-                        <i class=""></i>&nbsp; ' . $_SESSION['user'] . ' 
-                        </a>';
+                     <span class="admin-badge">Administrador: '.$nombre.'</span>';
                     ?>
 
                 </a>
@@ -58,7 +60,7 @@
                         <a href="#" class="btn btn-outline-warning me-2">
                             <i class="fas fa-user-edit"></i> Actualizar Info
                         </a>
-                        <a href="#" class="btn btn-outline-light">
+                        <a href="../Controller/logout.php" class="btn btn-outline-light">
                             <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
                         </a>
                     </div>
@@ -132,7 +134,7 @@
                         <button class="action-btn btn-intersection text-white" onclick="showForm('vias')">
                             <i class="fas fa-road"></i> Administrar Vías
                         </button>
-                        <button class="action-btn btn-traffic-light text-white">
+                        <button class="action-btn btn-traffic-light text-white" onclick="showForm('semaforo')">
                             <i class="fas fa-traffic-light"></i> Control Semáforos
                         </button>
                     </div>
@@ -175,17 +177,17 @@
                     </button>
                 </form>
             </div>
-
+            <!-- formulario para la creacion de interseccion -->
             <div class="form-container" id="vias">
-                <!-- Imagen centrada arriba del formulario -->
+
 
 
                 <div class="form-header">
                     <h4 class="form-title"><i class="fas fa-user-cog me-2"></i>Nueva Interseccion</h4>
-                    <button class="form-close">&times;</button> 
+                    <button class="form-close">&times;</button>
                 </div>
                 <img src="../assets/calles.jpeg" alt="Calles" class="form-img">
-                <form action="../Controller/newInterseccion.php" method="post" role="form" class="FormCatElec" data-form="login"> 
+                <form action="../Controller/newInterseccion.php" method="post" role="form" class="FormCatElec" data-form="login">
                     <div class="form-group">
                         <label>Número calle</label>
                         <input type="number" name="calle" class="input-field" required>
@@ -203,7 +205,6 @@
                     </button>
                 </form>
             </div>
-
             <style>
                 .form-container {
                     text-align: center;
@@ -223,7 +224,47 @@
                     /* Opcional: bordes redondeados */
                 }
             </style>
-            </style>
+
+            <!-- formulario para la creacion de semaforos -->
+            <div class="form-container" id="semaforo">
+                <div class="form-header">
+                    <h4 class="form-title"><i class="fas fa-user-cog me-2"></i>Nuevo Semaforo</h4>
+                    <button class="form-close">&times;</button>
+                </div>
+                <img src="../assets/semaforos.jpeg" alt="Calles" class="form-img">
+                <form action="../Controller/newSemaforo.php" method="post" role="form" class="FormCatElec" data-form="login">
+                    <div class="form-group">
+                        <label>Número de interseccion</label>
+                        <input type="number" name="interseccion" class="input-field" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Tiempo para color Verde</label>
+                        <input type="number" name="timeGreen" class="input-field" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Tiempo para color amarillo</label>
+                        <input type="number" name="timeYellow" class="input-field" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Tiempo para color Rojo</label>
+                        <input type="number" name="timeRed" class="input-field" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo de usuario</label>
+                        <select class="input-field" name="direccion" required>
+                            <option value="">Seleccionar Direccion</option>
+                            <option value="norte">Norte</option>
+                            <option value="sur">Sur</option>
+                            <option value="este">Este</option>
+                            <option value="oeste">Oeste</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="form-submit-btn btn-user-submit">
+                        <i class="fas fa-save me-2"></i>Guardar Interseccion
+                    </button>
+                </form>
+            </div>
+
 
             <!-- Footer -->
             <footer class="footer mt-auto">

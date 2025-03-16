@@ -51,7 +51,7 @@
     }
     //echo 'Error nombre o contraseña inválido';
     echo '<script>';
-    echo 'console.log(' . json_encode($_SESSION) . ');';
+    echo 'console.log(' .  $_SESSION['user'] . ');';
     echo '</script>';
 
 ?>
