@@ -378,36 +378,3 @@ body::before {
 .swal2-confirm:hover {
     filter: brightness(110%) !important;
 }
-.form-container {
-    max-width: 400px; /* Ajusta el ancho del formulario */
-    margin: auto;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    background-color: #fff;
-    text-align: center;
-}
-
-.form-image-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-}
-
-.form-image {
-    width: 50%; /* Ajusta el ancho de la imagen al 100% del contenedor */
-    max-width: 250px; /* Define un tamaño máximo */
-    height: auto; /* Mantiene la proporción */
-    border-radius: 8px; /* Bordes redondeados */
-}
-
-.form-header {
-    margin-bottom: 10px;
-}
-
-.input-field, .form-submit-btn {
-    width: 100%;
-    padding: 10px;
-    margin: 5px 0;
-}
