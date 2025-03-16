@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Administrador - Sistema de Tránsito</title>
+    <title>Panel Monitor - Sistema de Tránsito</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -21,14 +21,14 @@
                 <a class="navbar-brand" href="#">
                     <i class="fas fa-traffic-light"></i>
                     Sistema de Tránsito
-                    
+
                     <?php
                     session_start();
                     include '../Model/configServer.php';
                     include '../Model/consulSQL.php';
                     $nombre = $_SESSION["user"];
                     echo '
-                     <span class="admin-badge">Monitor: '.$nombre.'</span>';
+                     <span class="admin-badge">Monitor: ' . $nombre . '</span>';
                     ?>
 
                 </a>
@@ -71,15 +71,19 @@
 
     <!-- Main Content -->
     <main class="main-container">
-    <div class="container">
+        <div class="container">
             <!-- Selección de Intersección -->
             <div class="grid-container">
                 <div class="dashboard-card bg-blue">
                     <h3><i class="fas fa-crosshairs"></i> Intersección Actual</h3>
-                    <select class="input-field">
-                        <option>Av. Principal vs Calle 1</option>
-                        <option>Av. Central vs Calle 5</option>
-                        <option>Av. Norte vs Calle 3</option>
+                    <select class="input-field" name="interseccionSeleccionada" >
+                        <?php
+                        $interseccion = ejecutarSQL::consultar("SELECT * FROM nterseccion");
+                        while ($inter = mysqli_fetch_array($interseccion)) {
+                            echo '
+                        <option>' . $inter['nombre'] . '</option>';
+                        }
+                        ?>
                     </select>
                 </div>
             </div>
