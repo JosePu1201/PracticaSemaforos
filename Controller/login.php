@@ -26,11 +26,13 @@
                     $_SESSION['user']=$nombre;
                     $_SESSION['pass']=$clave;
                     $_SESSION['UserType']="Monitor";
+                    echo '<script> location.href="../View/admin.php"; </script>';
                         break;
                 case '3':
                     $_SESSION['user']=$nombre;
                     $_SESSION['pass']=$clave;
                     $_SESSION['UserType']="Supervisor";
+                    echo '<script> location.href="../View/admin.php"; </script>';
                         break;
                 default:
                     # code...

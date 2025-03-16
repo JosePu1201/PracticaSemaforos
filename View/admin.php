@@ -1,13 +1,16 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel Administrador - Sistema de Tránsito</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="../assets/admin.css">
 </head>
+
 <body>
     <div class="traffic-background"></div>
 
@@ -19,19 +22,19 @@
                     <i class="fas fa-traffic-light"></i>
                     Sistema de Tránsito
                     <span class="admin-badge">Administrador </span>
-                    <?php 
-                        echo '
+                    <?php
+                    echo '
                         <a href="#"  id="button-login-xs" class="">
-                        <i class=""></i>&nbsp; ' . $_SESSION['user'] .' 
+                        <i class=""></i>&nbsp; ' . $_SESSION['user'] . ' 
                         </a>';
                     ?>
-                    
+
                 </a>
-                
+
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                
+
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ms-auto me-4">
                         <li class="nav-item">
@@ -44,13 +47,13 @@
                             <a class="nav-link" href="#"><i class="fas fa-question-circle"></i> Ayuda</a>
                         </li>
                     </ul>
-                    
+
                     <div class="semaforo">
                         <div class="luz rojo"></div>
                         <div class="luz amarillo"></div>
                         <div class="luz verde"></div>
                     </div>
-                    
+
                     <div class="user-actions d-flex">
                         <a href="#" class="btn btn-outline-warning me-2">
                             <i class="fas fa-user-edit"></i> Actualizar Info
@@ -73,7 +76,7 @@
                     <p class="text-center">Gestión de usuarios, intersecciones y semáforos del sistema</p>
                 </div>
             </div>
-            
+
             <!-- Stats Summary -->
             <div class="row mb-4">
                 <div class="col-12">
@@ -144,8 +147,12 @@
                 </div>
                 <form action="../Controller/newUser.php" method="post" role="form" class="FormCatElec" data-form="login">
                     <div class="form-group">
+                        <label>Usuario</label>
+                        <input type="text" class="input-field" required name="usuarioNuevo"> Sin espacios
+                    </div>
+                    <div class="form-group">
                         <label>Nombre de usuario</label>
-                        <input type="text" class="input-field" required  name="nombreUserNuevo"> Sin espacios
+                        <input type="text" class="input-field" required name="nombreUserNuevo">
                     </div>
                     <div class="form-group">
                         <label>Correo electrónico</label>
@@ -153,13 +160,13 @@
                     </div>
                     <div class="form-group">
                         <label>Contrasenea</label>
-                        <input type="password" class="input-field"  name="newPass" placeholder="Ingresa tu contraseña" required>
+                        <input type="password" class="input-field" name="newPass" placeholder="Ingresa tu contraseña" required>
                     </div>
                     <div class="form-group">
                         <label>Tipo de usuario</label>
                         <select class="input-field" name="rolNuevo" required>
                             <option value="">Seleccionar rol</option>
-                            <option value="monitor" >Monitor</option>
+                            <option value="monitor">Monitor</option>
                             <option value="supervisor">Supervisor</option>
                         </select>
                     </div>
@@ -169,34 +176,55 @@
                 </form>
             </div>
 
-             <!-- Formulario de nueva interseccion -->
             <div class="form-container" id="vias">
+                <!-- Imagen centrada arriba del formulario -->
+
+
                 <div class="form-header">
-                    <h4 class="form-title"><i class="fas fa-user-cog me-2"></i>Nueva Via</h4>
-                    <button class="form-close">&times;</button>
+                    <h4 class="form-title"><i class="fas fa-user-cog me-2"></i>Nueva Interseccion</h4>
+                    <button class="form-close">&times;</button> 
                 </div>
-                <form>
+                <img src="../assets/calles.jpeg" alt="Calles" class="form-img">
+                <form action="../Controller/newInterseccion.php" method="post" role="form" class="FormCatElec" data-form="login"> 
                     <div class="form-group">
-                        <label>Numero calle</label>
-                        <input type="text" name="calle" class="input-field" required>
+                        <label>Número calle</label>
+                        <input type="number" name="calle" class="input-field" required>
                     </div>
                     <div class="form-group">
-                        <label>Numero avenida</label>
-                        <input type="email" name="numAv" class="input-field" required>
+                        <label>Número avenida</label>
+                        <input type="number" name="numAv" class="input-field" required>
                     </div>
                     <div class="form-group">
-                        <label>Tipo de usuario</label>
-                        <select class="input-field" required>
-                            <option value="">Seleccionar rol</option>
-                            <option value="admin">Administrador</option>
-                            <option value="operator">Operador</option>
-                        </select>
+                        <label>Número Zona</label>
+                        <input type="number" name="numZona" class="input-field" required>
                     </div>
                     <button type="submit" class="form-submit-btn btn-user-submit">
-                        <i class="fas fa-save me-2"></i>Guardar Usuario
+                        <i class="fas fa-save me-2"></i>Guardar Interseccion
                     </button>
                 </form>
             </div>
+
+            <style>
+                .form-container {
+                    text-align: center;
+                    /* Centra el contenido dentro del contenedor */
+                }
+
+                .form-img {
+                    display: block;
+                    margin: 0 auto;
+                    /* Centra la imagen */
+                    width: 80%;
+                    /* Ajusta el tamaño sin ocupar toda la pantalla */
+                    max-width: 500px;
+                    /* Límite de tamaño para evitar imágenes muy grandes */
+                    height: auto;
+                    border-radius: 8px;
+                    /* Opcional: bordes redondeados */
+                }
+            </style>
+            </style>
+
             <!-- Footer -->
             <footer class="footer mt-auto">
                 <div class="container text-center">
@@ -218,27 +246,30 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>
-    function showForm(formId) {
-        // Oculta todos los formularios
-        document.querySelectorAll('.form-container').forEach(form => {
-            form.style.display = 'none';
-        });
-        
-        // Muestra el formulario solicitado
-        const form = document.getElementById(formId);
-        if(form) {
-            form.style.display = 'block';
-            form.scrollIntoView({ behavior: 'smooth' });
-        }
-    }
+        function showForm(formId) {
+            // Oculta todos los formularios
+            document.querySelectorAll('.form-container').forEach(form => {
+                form.style.display = 'none';
+            });
 
-    // Cerrar formularios
-    document.querySelectorAll('.form-close').forEach(closeBtn => {
-        closeBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            closeBtn.closest('.form-container').style.display = 'none';
+            // Muestra el formulario solicitado
+            const form = document.getElementById(formId);
+            if (form) {
+                form.style.display = 'block';
+                form.scrollIntoView({
+                    behavior: 'smooth'
+                });
+            }
+        }
+
+        // Cerrar formularios
+        document.querySelectorAll('.form-close').forEach(closeBtn => {
+            closeBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                closeBtn.closest('.form-container').style.display = 'none';
+            });
         });
-    });
-</script>
+    </script>
 </body>
+
 </html>
