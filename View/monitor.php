@@ -99,25 +99,55 @@
 
             <!-- Botones de Control -->
             <div class="action-buttons">
-                <button class="action-btn bg-green">
+                <button class="action-btn bg-green" id="start-iteration">
                     <i class="fas fa-play-circle"></i> Iniciar Iteración
                 </button>
-                <button class="action-btn bg-red" disabled>
+                <button class="action-btn bg-red" id="stop-iteration" disabled>
                     <i class="fas fa-stop-circle"></i> Finalizar Iteración
                 </button>
                 <button class="action-btn bg-yellow">
-                    <i class="fas fa-file-upload"></i> Cargar Archivo CSV
+                    <i class="fas fa-file-upload"></i>
+                    <label for="csvFile">Cargar Archivo CSV</label>
+                    <input type="file" id="csvFile" accept=".csv" class="d-none">
                 </button>
                 <button class="action-btn bg-blue" id="generateRandomVehicles">
                     <i class="fas fa-random"></i> Generar Vehículos Aleatorios
                 </button>
             </div>
-
+            <div class="dashboard-card bg-light">
+                <h3><i class="fas fa-clock"></i> Modificar Tiempos de Semáforos</h3>
+                <form id="semaforo-form">
+                    <div class="form-group">
+                        <label for="direccion">Dirección</label>
+                        <select id="direccion" class="input-field">
+                            <option value="N">Norte</option>
+                            <option value="S">Sur</option>
+                            <option value="E">Este</option>
+                            <option value="O">Oeste</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="tiempo-verde">Tiempo Verde (segundos)</label>
+                        <input type="number" id="tiempo-verde" class="input-field" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="tiempo-amarillo">Tiempo Amarillo (segundos)</label>
+                        <input type="number" id="tiempo-amarillo" class="input-field" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="tiempo-rojo">Tiempo Rojo (segundos)</label>
+                        <input type="number" id="tiempo-rojo" class="input-field" min="1" required>
+                    </div>
+                    <button type="submit" class="action-btn bg-blue">
+                        <i class="fas fa-save"></i> Guardar
+                    </button>
+                </form>
+            </div>
             <!-- Visualización de Tráfico -->
             <div class="sim-traffic-panel">
                 <h3 class="sim-title"><i class="fas fa-car-side"></i> Simulación en Tiempo Real</h3>
                 <div class="sim-intersection">
-                    
+
                     <!-- Calles del cruce -->
                     <div class="sim-street sim-street-horizontal"></div>
                     <div class="sim-street sim-street-vertical"></div>
@@ -154,6 +184,24 @@
                         <div class="sim-bulb sim-green"></div>
                         <span class="sim-direction">Oeste</span>
                     </div>
+                </div>
+                <!-- Agregar después de sim-intersection -->
+
+                <div class="dashboard-card bg-light">
+                    <h3><i class="fas fa-clock"></i> Tiempos de Semáforos</h3>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Dirección</th>
+                                <th>Rojo (segundos)</th>
+                                <th>Amarillo (segundos)</th>
+                                <th>Verde (segundos)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="semaforo-table-body">
+                            <!-- Aquí se mostrarán los tiempos de los semáforos -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
@@ -227,6 +275,262 @@
         document.addEventListener('DOMContentLoaded', function() {
             const interseccionId = document.getElementById('interseccionSeleccionada').value;
             fetchVehiculos(interseccionId);
+        });
+        document.getElementById('csvFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('csvFile', file);
+            formData.append('interseccionId', document.getElementById('interseccionSeleccionada').value);
+
+            // Mostrar loader o indicador de carga
+            Swal.fire({
+                title: 'Cargando archivo...',
+                text: 'Por favor espere',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            fetch('../Controller/cargarCSV.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Éxito',
+                            text: data.message
+                        });
+                        // Recargar la lista de vehículos
+                        fetchVehiculos(document.getElementById('interseccionSeleccionada').value);
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: data.message
+                        });
+                    }
+                })
+                .catch(error => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Error al procesar el archivo: ' + error.message
+                    });
+                });
+
+            // Limpiar el input para permitir cargar el mismo archivo nuevamente
+            e.target.value = '';
+        });
+
+        // Agregar dentro del bloque <script> existente
+
+        document.getElementById('start-iteration').addEventListener('click', async function() {
+            const interseccionId = document.getElementById('interseccionSeleccionada').value;
+            const semaforos = await fetchSemaforos(interseccionId);
+
+            if (semaforos.length !== 4) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'La intersección debe tener 4 semáforos.'
+                });
+                return;
+            }
+
+            // Iniciar la simulación
+            simulation.start();
+            document.getElementById('start-iteration').disabled = true;
+            document.getElementById('stop-iteration').disabled = false;
+        });
+
+        document.getElementById('stop-iteration').addEventListener('click', function() {
+            // Detener la simulación
+            simulation.stop();
+            document.getElementById('start-iteration').disabled = false;
+            document.getElementById('stop-iteration').disabled = true;
+        });
+
+        async function fetchSemaforos(interseccionId) {
+            const response = await fetch('../Controller/getSemaforo.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `interseccionId=${interseccionId}`
+            });
+            return await response.json();
+        }
+
+        // Agregar dentro del bloque <script> existente
+
+        document.getElementById('semaforo-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const interseccionId = document.getElementById('interseccionSeleccionada').value;
+            const direccion = document.getElementById('direccion').value;
+            const tiempoVerde = document.getElementById('tiempo-verde').value;
+            const tiempoAmarillo = document.getElementById('tiempo-amarillo').value;
+            const tiempoRojo = document.getElementById('tiempo-rojo').value;
+
+            const response = await fetch('../Controller/updateSemaforo.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `interseccionId=${interseccionId}&direccion=${direccion}&tiempoVerde=${tiempoVerde}&tiempoAmarillo=${tiempoAmarillo}&tiempoRojo=${tiempoRojo}`
+            });
+            const result = await response.json();
+
+            if (result.status === 'success') {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Éxito',
+                    text: result.message
+                });
+                const interseccionId = document.getElementById('interseccionSeleccionada').value;
+                fetchSemaforos(interseccionId).then(updateSemaforoTable);
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: result.message
+                });
+            }
+        });
+
+        // Agregar dentro del bloque <script> existente
+
+        function updateSemaforoTable(semaforos) {
+            const tableBody = document.getElementById('semaforo-table-body');
+            tableBody.innerHTML = '';
+
+            semaforos.forEach(semaforo => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+            <td>${semaforo.direccion}</td>
+            <td>${semaforo.tiempoRojo}</td>
+            <td>${semaforo.tiempoAmarillo}</td>
+            <td>${semaforo.tiempoVerde}</td>
+        `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Cargar los tiempos de los semáforos al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            const interseccionId = document.getElementById('interseccionSeleccionada').value;
+            fetchSemaforos(interseccionId).then(updateSemaforoTable);
+        });
+    </script>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Control de semáforos
+            const lights = {
+                ns: document.querySelectorAll('.sim-light-north, .sim-light-south'),
+                ew: document.querySelectorAll('.sim-light-east, .sim-light-west')
+            };
+
+            function setLightState(group, state) {
+                group.forEach(light => {
+                    light.querySelectorAll('.sim-bulb').forEach(bulb => bulb.classList.remove('active'));
+                    if (state === 'green') light.querySelector('.sim-green').classList.add('active');
+                    if (state === 'yellow') light.querySelector('.sim-yellow').classList.add('active');
+                    if (state === 'red') light.querySelector('.sim-red').classList.add('active');
+                });
+            }
+
+            function lightCycle() {
+                // Norte-Sur: Rojo, Este-Oeste: Verde (5s)
+                setLightState(lights.ns, 'red');
+                setLightState(lights.ew, 'green');
+
+                setTimeout(() => {
+                    // Norte-Sur: Rojo, Este-Oeste: Amarillo (2s)
+                    setLightState(lights.ew, 'yellow');
+
+                    setTimeout(() => {
+                        // Norte-Sur: Verde, Este-Oeste: Rojo (5s)
+                        setLightState(lights.ns, 'green');
+                        setLightState(lights.ew, 'red');
+
+                        setTimeout(() => {
+                            // Norte-Sur: Amarillo, Este-Oeste: Rojo (2s)
+                            setLightState(lights.ns, 'yellow');
+                            setTimeout(lightCycle, 2000);
+                        }, 5000);
+                    }, 2000);
+                }, 5000);
+            }
+            lightCycle();
+
+            // Generación de vehículos
+            function createVehicle(direction) {
+                const vehicle = document.createElement('div');
+                vehicle.className = `sim-vehicle ${direction}`;
+                document.querySelector('.sim-intersection').appendChild(vehicle);
+
+                let x, y;
+                const speed = 2;
+                if (direction === 'north') {
+                    x = 250;
+                    y = -30;
+                }
+                if (direction === 'south') {
+                    x = 250;
+                    y = 530;
+                }
+                if (direction === 'east') {
+                    x = 530;
+                    y = 250;
+                }
+                if (direction === 'west') {
+                    x = -30;
+                    y = 250;
+                }
+
+                function move() {
+                    const nsRed = document.querySelector('.sim-light-north .sim-red.active');
+                    const ewRed = document.querySelector('.sim-light-east .sim-red.active');
+
+                    // Detectar semáforo
+                    let shouldStop = false;
+                    if (direction === 'north' && nsRed && y > 150) shouldStop = true;
+                    if (direction === 'south' && nsRed && y < 300) shouldStop = true;
+                    if (direction === 'east' && ewRed && x < 300) shouldStop = true;
+                    if (direction === 'west' && ewRed && x > 150) shouldStop = true;
+
+                    if (!shouldStop) {
+                        if (direction === 'north') y += speed;
+                        if (direction === 'south') y -= speed;
+                        if (direction === 'east') x -= speed;
+                        if (direction === 'west') x += speed;
+
+                        vehicle.style.transform = `translate(${x}px, ${y}px)`;
+
+                        // Eliminar al salir
+                        if (y < -50 || y > 550 || x < -50 || x > 550) {
+                            vehicle.remove();
+                            return;
+                        }
+                    }
+                    requestAnimationFrame(move);
+                }
+                move();
+            }
+
+            // Generar vehículos aleatorios
+            setInterval(() => {
+                const directions = ['north', 'south', 'east', 'west'];
+                createVehicle(directions[Math.floor(Math.random() * 4)]);
+            }, 1500);
         });
     </script>
 </body>

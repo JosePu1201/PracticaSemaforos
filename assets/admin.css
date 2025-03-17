@@ -514,3 +514,15 @@ body::before {
         height: 300px;
     }
 }
+.sim-vehicle {
+    position: absolute;
+    width: 20px;
+    height: 30px;
+    background-color: #666;
+    border-radius: 4px;
+    transition: all 0.1s linear;
+}
+
+.sim-vehicle.north { transform: rotate(180deg); }
+.sim-vehicle.east  { transform: rotate(-90deg); }
+.sim-vehicle.west  { transform: rotate(90deg); }
