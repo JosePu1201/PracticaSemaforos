@@ -1,3 +1,4 @@
+<!-- filepath: /opt/lampp/htdocs/Semaforos/View/monitor.php -->
 <!DOCTYPE html>
 <html lang="es">
 
@@ -9,6 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="../assets/admin.css">
+    <link rel="stylesheet" href="../assets/simulation.css">
 </head>
 
 <body>
@@ -76,16 +78,23 @@
             <div class="grid-container">
                 <div class="dashboard-card bg-blue">
                     <h3><i class="fas fa-crosshairs"></i> Intersección Actual</h3>
-                    <select class="input-field" name="interseccionSeleccionada" >
+                    <select class="input-field" name="interseccionSeleccionada" id="interseccionSeleccionada">
                         <?php
-                        $interseccion = ejecutarSQL::consultar("SELECT * FROM nterseccion");
+                        $interseccion = ejecutarSQL::consultar("SELECT * FROM Interseccion");
                         while ($inter = mysqli_fetch_array($interseccion)) {
-                            echo '
-                        <option>' . $inter['nombre'] . '</option>';
+                            echo '<option value="' . $inter['id'] . '">' . $inter['nombre'] . '</option>';
                         }
                         ?>
                     </select>
                 </div>
+            </div>
+
+            <!-- Contenedor para mostrar los vehículos -->
+            <div id="vehiculos-container" class="dashboard-card bg-light">
+                <h3><i class="fas fa-car"></i> Vehículos en la Intersección</h3>
+                <ul id="vehiculos-list">
+                    <!-- Aquí se mostrarán los vehículos -->
+                </ul>
             </div>
 
             <!-- Botones de Control -->
@@ -99,20 +108,52 @@
                 <button class="action-btn bg-yellow">
                     <i class="fas fa-file-upload"></i> Cargar Archivo CSV
                 </button>
-                <button class="action-btn bg-blue">
+                <button class="action-btn bg-blue" id="generateRandomVehicles">
                     <i class="fas fa-random"></i> Generar Vehículos Aleatorios
                 </button>
             </div>
 
             <!-- Visualización de Tráfico -->
-            <div class="traffic-visualization">
-                <h3><i class="fas fa-car-side"></i> Simulación en Tiempo Real</h3>
-                <div class="simulation-grid">
-                    <div class="lane horizontal"></div>
-                    <div class="lane vertical"></div>
-                    <div class="vehicle-car"></div>
-                    <div class="vehicle-bus"></div>
-                    <div class="vehicle-truck"></div>
+            <div class="sim-traffic-panel">
+                <h3 class="sim-title"><i class="fas fa-car-side"></i> Simulación en Tiempo Real</h3>
+                <div class="sim-intersection">
+                    
+                    <!-- Calles del cruce -->
+                    <div class="sim-street sim-street-horizontal"></div>
+                    <div class="sim-street sim-street-vertical"></div>
+
+                    <!-- Líneas divisorias -->
+                    <div class="sim-divider sim-divider-horizontal"></div>
+                    <div class="sim-divider sim-divider-vertical"></div>
+
+                    <!-- Semáforos -->
+                    <div class="sim-traffic-light sim-light-north">
+                        <div class="sim-bulb sim-red active"></div>
+                        <div class="sim-bulb sim-yellow"></div>
+                        <div class="sim-bulb sim-green"></div>
+                        <span class="sim-direction">Norte</span>
+                    </div>
+
+                    <div class="sim-traffic-light sim-light-east">
+                        <div class="sim-bulb sim-red"></div>
+                        <div class="sim-bulb sim-yellow"></div>
+                        <div class="sim-bulb sim-green active"></div>
+                        <span class="sim-direction">Este</span>
+                    </div>
+
+                    <div class="sim-traffic-light sim-light-south">
+                        <div class="sim-bulb sim-red active"></div>
+                        <div class="sim-bulb sim-yellow"></div>
+                        <div class="sim-bulb sim-green"></div>
+                        <span class="sim-direction">Sur</span>
+                    </div>
+
+                    <div class="sim-traffic-light sim-light-west">
+                        <div class="sim-bulb sim-red"></div>
+                        <div class="sim-bulb sim-yellow active"></div>
+                        <div class="sim-bulb sim-green"></div>
+                        <span class="sim-direction">Oeste</span>
+                    </div>
                 </div>
             </div>
 
@@ -135,28 +176,57 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>
-        function showForm(formId) {
-            // Oculta todos los formularios
-            document.querySelectorAll('.form-container').forEach(form => {
-                form.style.display = 'none';
-            });
+        document.getElementById('interseccionSeleccionada').addEventListener('change', function() {
+            const interseccionId = this.value;
+            fetchVehiculos(interseccionId);
+        });
 
-            // Muestra el formulario solicitado
-            const form = document.getElementById(formId);
-            if (form) {
-                form.style.display = 'block';
-                form.scrollIntoView({
-                    behavior: 'smooth'
-                });
-            }
+        document.getElementById('generateRandomVehicles').addEventListener('click', function() {
+            const interseccionId = document.getElementById('interseccionSeleccionada').value;
+            generateRandomVehicles(interseccionId);
+        });
+
+        function fetchVehiculos(interseccionId) {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '../Controller/getVehiculos.php', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.onload = function() {
+                if (this.status === 200) {
+                    const vehiculos = JSON.parse(this.responseText);
+                    const vehiculosList = document.getElementById('vehiculos-list');
+                    vehiculosList.innerHTML = '';
+                    vehiculos.forEach(vehiculo => {
+                        const li = document.createElement('li');
+                        li.textContent = `${vehiculo.tipo} - ${vehiculo.placa}`;
+                        vehiculosList.appendChild(li);
+                    });
+                }
+            };
+            xhr.send('interseccionId=' + interseccionId);
         }
 
-        // Cerrar formularios
-        document.querySelectorAll('.form-close').forEach(closeBtn => {
-            closeBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                closeBtn.closest('.form-container').style.display = 'none';
-            });
+        function generateRandomVehicles(interseccionId) {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '../Controller/randomVeiculos.php', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.onload = function() {
+                if (this.status === 200) {
+                    const response = JSON.parse(this.responseText);
+                    if (response.status === 'success') {
+                        fetchVehiculos(interseccionId);
+                        alert(response.message);
+                    } else {
+                        alert('Error al generar vehículos aleatorios');
+                    }
+                }
+            };
+            xhr.send('interseccionId=' + interseccionId);
+        }
+
+        // Cargar los vehículos de la intersección seleccionada al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            const interseccionId = document.getElementById('interseccionSeleccionada').value;
+            fetchVehiculos(interseccionId);
         });
     </script>
 </body>
