@@ -5,7 +5,7 @@
 
     $nombre=consultasSQL::clean_string($_POST['nombre']);
     $clave=consultasSQL::clean_string($_POST['clave']);
-
+    date_default_timezone_set('America/Guatemala');
     if($nombre != "" && $clave != ""){
         $existe = ejecutarSQL::consultar("SELECT * FROM Usuario WHERE id_usuario='$nombre' AND pass='$clave'");
         $verdadero = mysqli_num_rows($existe);
@@ -19,6 +19,7 @@
                     $_SESSION['user']=$nombre;
                     $_SESSION['pass']=$clave;
                     $_SESSION['UserType']="Admin";
+                    $_SESSION['login_time'] = date('Y-m-d H:i:s');
                     $directorio_actual = getcwd();
                     echo '<script> location.href="../View/admin.php"; </script>';
                     break;
@@ -26,21 +27,21 @@
                     $_SESSION['user']=$nombre;
                     $_SESSION['pass']=$clave;
                     $_SESSION['UserType']="Monitor";
+                    $_SESSION['login_time'] = date('Y-m-d H:i:s');
                     echo '<script> location.href="../View/monitor.php"; </script>';
                         break;
                 case '3':
                     $_SESSION['user']=$nombre;
                     $_SESSION['pass']=$clave;
                     $_SESSION['UserType']="Supervisor";
-                    echo '<script> location.href="../View/admin.php"; </script>';
+                    $_SESSION['login_time'] = date('Y-m-d H:i:s');
+                    echo '<script> location.href="../View/supervisor.php"; </script>';
                         break;
                 default:
                     # code...
                     break;
             }
-            if($idRol == 1){
 
-            }
         }
         else{
             echo 'El nombre o la contraseña invalida';

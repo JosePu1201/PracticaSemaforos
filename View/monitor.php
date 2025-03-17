@@ -28,9 +28,15 @@
                     session_start();
                     include '../Model/configServer.php';
                     include '../Model/consulSQL.php';
+
+                    // Verificar si las variables de sesión existen
+                    if (!isset($_SESSION["user"]) || !isset($_SESSION["UserType"]) || $_SESSION["UserType"] != "Monitor") {
+                        header("Location: ../Controller/logout.php");
+                        exit(); // Importante añadir exit después de redirect
+                    }
+
                     $nombre = $_SESSION["user"];
-                    echo '
-                     <span class="admin-badge">Monitor: ' . $nombre . '</span>';
+                    echo '<span class="admin-badge">Supervisor: ' . htmlspecialchars($nombre, ENT_QUOTES, 'UTF-8') . '</span>';
                     ?>
 
                 </a>
@@ -245,7 +251,7 @@
                     vehiculosList.innerHTML = '';
                     vehiculos.forEach(vehiculo => {
                         const li = document.createElement('li');
-                        li.textContent = `${vehiculo.tipo} - ${vehiculo.placa}`;
+                        li.textContent = `${vehiculo.tipo} - ${vehiculo.placa}- ${vehiculo.direccion}`;
                         vehiculosList.appendChild(li);
                     });
                 }
@@ -347,6 +353,7 @@
 
             // Iniciar la simulación
             //simulation.start();
+            iniciarIteracion();
             document.getElementById('start-iteration').disabled = true;
             document.getElementById('stop-iteration').disabled = false;
         });
@@ -423,6 +430,54 @@
             const interseccionId = document.getElementById('interseccionSeleccionada').value;
             fetchSemaforos(interseccionId).then(updateSemaforoTable);
         });
+
+        let inicioIteracion = null;
+
+        function iniciarIteracion() {
+            inicioIteracion = new Date().toISOString();
+            console.log("Iteración iniciada a las: " + inicioIteracion);
+        }
+        let vehiculosInfo = [];
+        function finalizarIteracion() {
+            const finIteracion = new Date().toISOString();
+            console.log("Iteración finalizada a las: " + finIteracion);
+
+            // Mostrar área de texto emergente para el comentario
+            Swal.fire({
+                title: 'Comentario sobre la iteración',
+                input: 'textarea',
+                inputLabel: 'Comentario',
+                inputPlaceholder: 'Escribe tu comentario aquí...',
+                showCancelButton: true,
+                confirmButtonText: 'Aceptar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const comentario = result.value;
+                    const usuario = '<?php echo $_SESSION["user"]; ?>'; // Obtener el nombre de usuario de la sesión
+
+                    // Enviar los datos al servidor
+                    fetchCrearIteracion(inicioIteracion, finIteracion, usuario, comentario);
+                    console.log(JSON.stringify(vehiculosInfo, null, 2));
+                }
+            });
+        }
+
+        async function fetchCrearIteracion(inicio, fin, usuario, comentario) {
+            const response = await fetch('../Controller/crearIteracion.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `inicio=${inicio}&fin=${fin}&usuario=${usuario}&comentario=${comentario}`
+            });
+
+            if (response.ok) {
+                console.log("Iteración guardada correctamente");
+            } else {
+                console.error("Error al guardar la iteración");
+            }
+        }
     </script>
 
     <script>
@@ -559,74 +614,104 @@
             lightCycle(); // Iniciar el ciclo
 
             // Generación de vehículos
-            function createVehicle(direction) {
-                if (!isSimulationRunning) return; // Detener la creación de vehículos si la simulación no está activa
+            const vehicleQueues = {
+                north: [],
+                south: [],
+                east: [],
+                west: []
+            };
 
-                const vehicle = document.createElement('div');
-                vehicle.className = `sim-vehicle ${direction}`;
-                document.querySelector('.sim-intersection').appendChild(vehicle);
+            function createVehicle(direction) {
+                if (!isSimulationRunning) return; // Detener la creación si la simulación está apagada
+
+                const vehicleElem = document.createElement('div');
+                vehicleElem.className = `sim-vehicle ${direction}`;
+                document.querySelector('.sim-intersection').appendChild(vehicleElem);
 
                 let x, y;
                 const speed = 2;
                 if (direction === 'north') {
                     x = 250;
                     y = -30;
-                }
-                if (direction === 'south') {
+                } else if (direction === 'south') {
                     x = 250;
                     y = 530;
-                }
-                if (direction === 'east') {
+                } else if (direction === 'east') {
                     x = 530;
                     y = 250;
-                }
-                if (direction === 'west') {
+                } else if (direction === 'west') {
                     x = -30;
                     y = 250;
                 }
 
-                function move() {
-                    if (!isSimulationRunning) return; // Detener el movimiento si la simulación no está activa
+                // Creamos el objeto vehículo con los datos de llegada
+                const vehicleObj = {
+                    element: vehicleElem,
+                    x: x,
+                    y: y,
+                    speed: speed,
+                    arrivalTime: Date.now(), // Tiempo en el que llegó al semáforo
+                    passedIntersection: false
+                };
 
-                    const nsGreen = document.querySelector('.sim-light-north .sim-green.active');
-                    const nsYellow = document.querySelector('.sim-light-north .sim-yellow.active');
-                    const nsRed = document.querySelector('.sim-light-north .sim-red.active');
-                    const ewGreen = document.querySelector('.sim-light-east .sim-green.active');
-                    const ewYellow = document.querySelector('.sim-light-east .sim-yellow.active');
-                    const ewRed = document.querySelector('.sim-light-east .sim-red.active');
-                    const ssGreen = document.querySelector('.sim-light-south .sim-green.active');
-                    const ssYellow = document.querySelector('.sim-light-south .sim-yellow.active');
-                    const ssRed = document.querySelector('.sim-light-south .sim-red.active');
-                    const wsGreen = document.querySelector('.sim-light-west .sim-green.active');
-                    const wsYellow = document.querySelector('.sim-light-west .sim-yellow.active');
-                    const wsRed = document.querySelector('.sim-light-west .sim-red.active');
+                // Agrega el vehículo a la cola correspondiente
+                vehicleQueues[direction].push(vehicleObj);
 
-                    // Detectar semáforo
-                    let shouldStop = false;
-                    if (direction === 'north' && (!ssGreen || ssYellow || ssRed) && y > 150) shouldStop = true;
-                    if (direction === 'south' && (!nsGreen || nsYellow || nsRed) && y < 300) shouldStop = true;
-                    if (direction === 'east' && (!wsGreen || wsYellow || wsRed) && x < 300) shouldStop = true;
-                    if (direction === 'west' && (!ewGreen || ewYellow || ewRed) && x > 150) shouldStop = true;
-
-                    if (!shouldStop) {
-                        if (direction === 'north') y += speed;
-                        if (direction === 'south') y -= speed;
-                        if (direction === 'east') x -= speed;
-                        if (direction === 'west') x += speed;
-
-                        vehicle.style.transform = `translate(${x}px, ${y}px)`;
-
-                        // Eliminar al salir
-                        if (y < -50 || y > 550 || x < -50 || x > 550) {
-                            vehicle.remove();
-                            return;
-                        }
-                    }
-                    requestAnimationFrame(move);
+                // Si es el primer vehículo de la cola, iniciamos su movimiento
+                if (vehicleQueues[direction].length === 1) {
+                    moveVehicle(vehicleObj, direction);
                 }
-                move();
             }
 
+            function moveVehicle(vehicleObj, direction) {
+                function animate() {
+                    if (!isSimulationRunning) return; // Si se detuvo la simulación, termina
+
+                    // Consultar el semáforo actual para esa dirección
+                    const currentLight = lights[direction]; // lights obtenido en startSimulation (debe estar en alcance)
+                    const isGreen = currentLight.querySelector('.sim-green.active');
+
+                    // Si el semáforo no está en verde, esperar sin mover el vehículo
+                    if (!isGreen) {
+                        requestAnimationFrame(animate);
+                        return;
+                    }
+
+                    // Mover el vehículo según su dirección
+                    if (direction === 'north') {
+                        vehicleObj.y += vehicleObj.speed;
+                    } else if (direction === 'south') {
+                        vehicleObj.y -= vehicleObj.speed;
+                    } else if (direction === 'east') {
+                        vehicleObj.x -= vehicleObj.speed;
+                    } else if (direction === 'west') {
+                        vehicleObj.x += vehicleObj.speed;
+                    }
+                    vehicleObj.element.style.transform = `translate(${vehicleObj.x}px, ${vehicleObj.y}px)`;
+
+                    // Si el vehículo sale del área visible, lo eliminamos y actualizamos la cola
+                    if (vehicleObj.y < -50 || vehicleObj.y > 550 || vehicleObj.x < -50 || vehicleObj.x > 550) {
+                        const timeTaken = (Date.now() - vehicleObj.arrivalTime) / 1000; // En segundos
+                        console.log(`El vehículo de dirección ${direction} pasó en ${timeTaken} segundos`);
+                        vehiculosInfo.push({
+                            direccion: direction,
+                            tiempo: timeTaken
+                        });
+                        vehicleObj.element.remove();
+                        vehicleQueues[direction].shift();
+                        // Iniciar el siguiente vehículo de la cola con un pequeño retraso
+                        if (vehicleQueues[direction].length > 0) {
+                            setTimeout(() => {
+                                moveVehicle(vehicleQueues[direction][0], direction);
+                            }, 500);
+                        }
+                        return;
+                    }
+
+                    requestAnimationFrame(animate);
+                }
+                animate();
+            }
             simulationInterval = setInterval(() => {
                 const directions = ['north', 'south', 'east', 'west'];
                 createVehicle(directions[Math.floor(Math.random() * 4)]);
@@ -645,6 +730,7 @@
             // Restaurar los botones
             document.getElementById('start-iteration').disabled = false;
             document.getElementById('stop-iteration').disabled = true;
+            finalizarIteracion();
         });
     </script>
 </body>

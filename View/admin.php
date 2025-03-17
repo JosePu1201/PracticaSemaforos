@@ -21,14 +21,20 @@
                 <a class="navbar-brand" href="#">
                     <i class="fas fa-traffic-light"></i>
                     Sistema de Tránsito
-                    
+
                     <?php
                     session_start();
                     include '../Model/configServer.php';
                     include '../Model/consulSQL.php';
+
+                    // Verificar si las variables de sesión existen
+                    if (!isset($_SESSION["user"]) || !isset($_SESSION["UserType"]) || $_SESSION["UserType"] != "Admin") {
+                        header("Location: ../Controller/logout.php");
+                        exit(); // Importante añadir exit después de redirect
+                    }
+
                     $nombre = $_SESSION["user"];
-                    echo '
-                     <span class="admin-badge">Administrador: '.$nombre.'</span>';
+                    echo '<span class="admin-badge">Supervisor: ' . htmlspecialchars($nombre, ENT_QUOTES, 'UTF-8') . '</span>';
                     ?>
 
                 </a>
