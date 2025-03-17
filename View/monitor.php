@@ -328,8 +328,8 @@
             e.target.value = '';
         });
 
-        // Agregar dentro del bloque <script> existente
-        
+
+
         document.getElementById('start-iteration').addEventListener('click', async function() {
             const interseccionId = document.getElementById('interseccionSeleccionada').value;
             const semaforos = await fetchSemaforos(interseccionId);
@@ -425,145 +425,228 @@
         });
     </script>
 
-<script>
-    let simulationInterval; // Para controlar la generación de vehículos
-    let lightTimeout; // Para controlar el cambio de semáforos
-    let isSimulationRunning = false; // Bandera para el estado de la simulación
+    <script>
+        let simulationInterval; // Para controlar la generación de vehículos
+        let lightTimeout; // Para controlar el cambio de semáforos
+        let isSimulationRunning = false; // Bandera para el estado de la simulación
 
-    function startSimulation() {
-        if (isSimulationRunning) return; // Evitar múltiples inicios
-        isSimulationRunning = true;
-        const lights = {
-            north: document.querySelector('.sim-light-north'),
-            east: document.querySelector('.sim-light-east'),
-            south: document.querySelector('.sim-light-south'),
-            west: document.querySelector('.sim-light-west')
-        };
+        async function startSimulation() {
 
-        const order = ['north', 'east', 'south', 'west']; // Orden circular
-        let currentIndex = 0; // Empezamos con el semáforo norte
 
-        function setLightState(light, state) {
-            light.querySelectorAll('.sim-bulb').forEach(bulb => bulb.classList.remove('active'));
-            if (state === 'green') light.querySelector('.sim-green').classList.add('active');
-            if (state === 'yellow') light.querySelector('.sim-yellow').classList.add('active');
-            if (state === 'red') light.querySelector('.sim-red').classList.add('active');
-        }
+            if (isSimulationRunning) return; // Evitar múltiples inicios
+            isSimulationRunning = true;
+            const lights = {
+                north: document.querySelector('.sim-light-north'),
+                east: document.querySelector('.sim-light-east'),
+                south: document.querySelector('.sim-light-south'),
+                west: document.querySelector('.sim-light-west')
+            };
 
-        function lightCycle() {
-            if (!isSimulationRunning) return; // Detener el ciclo si la simulación no está activa
+            const order = ['north', 'east', 'south', 'west']; // Orden circular
+            let currentIndex = 0; // Empezamos con el semáforo norte
 
-            const currentLight = lights[order[currentIndex]]; // Semáforo actual
-            const nextIndex = (currentIndex + 1) % order.length; // Próximo semáforo
-
-            // Activar verde en el actual y rojo en todos los demás
-            Object.values(lights).forEach(light => setLightState(light, 'red'));
-            setLightState(currentLight, 'green');
-
-            lightTimeout = setTimeout(() => {
-                // Cambia a amarillo después de 5s
-                setLightState(currentLight, 'yellow');
-
-                lightTimeout = setTimeout(() => {
-                    // Cambia al siguiente semáforo después de 2s
-                    currentIndex = nextIndex;
-                    lightCycle();
-                }, 2000); // Amarillo 2s
-
-            }, 5000); // Verde 5s
-        }
-
-        lightCycle(); // Iniciar el ciclo
-
-        // Generación de vehículos
-        function createVehicle(direction) {
-            if (!isSimulationRunning) return; // Detener la creación de vehículos si la simulación no está activa
-
-            const vehicle = document.createElement('div');
-            vehicle.className = `sim-vehicle ${direction}`;
-            document.querySelector('.sim-intersection').appendChild(vehicle);
-
-            let x, y;
-            const speed = 2;
-            if (direction === 'north') {
-                x = 250;
-                y = -30;
-            }
-            if (direction === 'south') {
-                x = 250;
-                y = 530;
-            }
-            if (direction === 'east') {
-                x = 530;
-                y = 250;
-            }
-            if (direction === 'west') {
-                x = -30;
-                y = 250;
+            function setLightState(light, state) {
+                light.querySelectorAll('.sim-bulb').forEach(bulb => bulb.classList.remove('active'));
+                if (state === 'green') light.querySelector('.sim-green').classList.add('active');
+                if (state === 'yellow') light.querySelector('.sim-yellow').classList.add('active');
+                if (state === 'red') light.querySelector('.sim-red').classList.add('active');
             }
 
-            function move() {
-                if (!isSimulationRunning) return; // Detener el movimiento si la simulación no está activa
+            async function lightCycle() {
+                if (!isSimulationRunning) return; // Detener el ciclo si la simulación no está activa
 
-                const nsGreen = document.querySelector('.sim-light-north .sim-green.active');
-                const nsYellow = document.querySelector('.sim-light-north .sim-yellow.active');
-                const nsRed = document.querySelector('.sim-light-north .sim-red.active');
-                const ewGreen = document.querySelector('.sim-light-east .sim-green.active');
-                const ewYellow = document.querySelector('.sim-light-east .sim-yellow.active');
-                const ewRed = document.querySelector('.sim-light-east .sim-red.active');
-                const ssGreen = document.querySelector('.sim-light-south .sim-green.active');
-                const ssYellow = document.querySelector('.sim-light-south .sim-yellow.active');
-                const ssRed = document.querySelector('.sim-light-south .sim-red.active');
-                const wsGreen = document.querySelector('.sim-light-west .sim-green.active');
-                const wsYellow = document.querySelector('.sim-light-west .sim-yellow.active');
-                const wsRed = document.querySelector('.sim-light-west .sim-red.active');
+                const currentLight = lights[order[currentIndex]]; // Semáforo actual
+                const nextIndex = (currentIndex + 1) % order.length; // Próximo semáforo
+                const interseccionId = document.getElementById('interseccionSeleccionada').value;
+                const semaforos = await fetchSemaforos(interseccionId);
+                // Separar semáforos por dirección
+                const semaforosPorDireccion = {
+                    N: null,
+                    S: null,
+                    E: null,
+                    O: null
+                };
 
-                // Detectar semáforo
-                let shouldStop = false;
-                if (direction === 'north' && (!ssGreen || ssYellow || ssRed) && y > 150) shouldStop = true;
-                if (direction === 'south' && (!nsGreen || nsYellow || nsRed) && y < 300) shouldStop = true;
-                if (direction === 'east' && (!wsGreen || wsYellow || wsRed) && x < 300) shouldStop = true;
-                if (direction === 'west' && (!ewGreen || ewYellow || ewRed) && x > 150) shouldStop = true;
-
-                if (!shouldStop) {
-                    if (direction === 'north') y += speed;
-                    if (direction === 'south') y -= speed;
-                    if (direction === 'east') x -= speed;
-                    if (direction === 'west') x += speed;
-
-                    vehicle.style.transform = `translate(${x}px, ${y}px)`;
-
-                    // Eliminar al salir
-                    if (y < -50 || y > 550 || x < -50 || x > 550) {
-                        vehicle.remove();
-                        return;
+                // Agrupar los semáforos por dirección
+                semaforos.forEach(semaforo => {
+                    if (semaforo.direccion === 'N') {
+                        semaforosPorDireccion.N = semaforo;
+                    } else if (semaforo.direccion === 'S') {
+                        semaforosPorDireccion.S = semaforo;
+                    } else if (semaforo.direccion === 'E') {
+                        semaforosPorDireccion.E = semaforo;
+                    } else if (semaforo.direccion === 'O') {
+                        semaforosPorDireccion.O = semaforo;
                     }
+                });
+
+                // Ahora puedes acceder a los tiempos de cada dirección, por ejemplo:
+                const tiempoVerdeN = semaforosPorDireccion.N?.tiempoVerde;
+                const tiempoAmarilloN = semaforosPorDireccion.N?.tiempoAmarillo;
+
+                const tiempoVerdeS = semaforosPorDireccion.S?.tiempoVerde;
+                const tiempoAmarilloS = semaforosPorDireccion.S?.tiempoAmarillo;
+
+                const tiempoVerdeE = semaforosPorDireccion.E?.tiempoVerde;
+                const tiempoAmarilloE = semaforosPorDireccion.E?.tiempoAmarillo;
+
+                const tiempoVerdeO = semaforosPorDireccion.O?.tiempoVerde;
+                const tiempoAmarilloO = semaforosPorDireccion.O?.tiempoAmarillo;
+                if (currentIndex === 0) {
+                    Object.values(lights).forEach(light => setLightState(light, 'red'));
+                    setLightState(currentLight, 'green');
+                    lightTimeout = setTimeout(() => {
+                        // Cambia a amarillo después de 5s
+                        setLightState(currentLight, 'yellow');
+
+                        lightTimeout = setTimeout(() => {
+                            // Cambia al siguiente semáforo después de 2s
+                            currentIndex = nextIndex;
+                            lightCycle();
+                        }, tiempoAmarilloN * 1000); // Amarillo 2s
+
+                    }, tiempoVerdeN * 1000); // Verde 5s
+
+                } else if (currentIndex === 1) {
+                    Object.values(lights).forEach(light => setLightState(light, 'red'));
+                    setLightState(currentLight, 'green');
+                    lightTimeout = setTimeout(() => {
+                        // Cambia a amarillo después de 5s
+                        setLightState(currentLight, 'yellow');
+
+                        lightTimeout = setTimeout(() => {
+                            // Cambia al siguiente semáforo después de 2s
+                            currentIndex = nextIndex;
+                            lightCycle();
+                        }, tiempoAmarilloE * 1000); // Amarillo 2s
+
+                    }, tiempoVerdeE * 1000);
+
+                } else if (currentIndex === 2) {
+                    Object.values(lights).forEach(light => setLightState(light, 'red'));
+                    setLightState(currentLight, 'green');
+                    lightTimeout = setTimeout(() => {
+                        // Cambia a amarillo después de 5s
+                        setLightState(currentLight, 'yellow');
+
+                        lightTimeout = setTimeout(() => {
+                            // Cambia al siguiente semáforo después de 2s
+                            currentIndex = nextIndex;
+                            lightCycle();
+                        }, tiempoAmarilloS * 1000); // Amarillo 2s
+
+                    }, tiempoVerdeS * 1000);
+
+                } else if (currentIndex === 3) {
+                    Object.values(lights).forEach(light => setLightState(light, 'red'));
+                    setLightState(currentLight, 'green');
+                    lightTimeout = setTimeout(() => {
+                        // Cambia a amarillo después de 5s
+                        setLightState(currentLight, 'yellow');
+
+                        lightTimeout = setTimeout(() => {
+                            // Cambia al siguiente semáforo después de 2s
+                            currentIndex = nextIndex;
+                            lightCycle();
+                        }, tiempoAmarilloO * 1000); // Amarillo 2s
+
+                    }, tiempoVerdeO * 1000);
                 }
-                requestAnimationFrame(move);
+                // Activar verde en el actual y rojo en todos los demás
+                // Verde 5s
             }
-            move();
+
+            lightCycle(); // Iniciar el ciclo
+
+            // Generación de vehículos
+            function createVehicle(direction) {
+                if (!isSimulationRunning) return; // Detener la creación de vehículos si la simulación no está activa
+
+                const vehicle = document.createElement('div');
+                vehicle.className = `sim-vehicle ${direction}`;
+                document.querySelector('.sim-intersection').appendChild(vehicle);
+
+                let x, y;
+                const speed = 2;
+                if (direction === 'north') {
+                    x = 250;
+                    y = -30;
+                }
+                if (direction === 'south') {
+                    x = 250;
+                    y = 530;
+                }
+                if (direction === 'east') {
+                    x = 530;
+                    y = 250;
+                }
+                if (direction === 'west') {
+                    x = -30;
+                    y = 250;
+                }
+
+                function move() {
+                    if (!isSimulationRunning) return; // Detener el movimiento si la simulación no está activa
+
+                    const nsGreen = document.querySelector('.sim-light-north .sim-green.active');
+                    const nsYellow = document.querySelector('.sim-light-north .sim-yellow.active');
+                    const nsRed = document.querySelector('.sim-light-north .sim-red.active');
+                    const ewGreen = document.querySelector('.sim-light-east .sim-green.active');
+                    const ewYellow = document.querySelector('.sim-light-east .sim-yellow.active');
+                    const ewRed = document.querySelector('.sim-light-east .sim-red.active');
+                    const ssGreen = document.querySelector('.sim-light-south .sim-green.active');
+                    const ssYellow = document.querySelector('.sim-light-south .sim-yellow.active');
+                    const ssRed = document.querySelector('.sim-light-south .sim-red.active');
+                    const wsGreen = document.querySelector('.sim-light-west .sim-green.active');
+                    const wsYellow = document.querySelector('.sim-light-west .sim-yellow.active');
+                    const wsRed = document.querySelector('.sim-light-west .sim-red.active');
+
+                    // Detectar semáforo
+                    let shouldStop = false;
+                    if (direction === 'north' && (!ssGreen || ssYellow || ssRed) && y > 150) shouldStop = true;
+                    if (direction === 'south' && (!nsGreen || nsYellow || nsRed) && y < 300) shouldStop = true;
+                    if (direction === 'east' && (!wsGreen || wsYellow || wsRed) && x < 300) shouldStop = true;
+                    if (direction === 'west' && (!ewGreen || ewYellow || ewRed) && x > 150) shouldStop = true;
+
+                    if (!shouldStop) {
+                        if (direction === 'north') y += speed;
+                        if (direction === 'south') y -= speed;
+                        if (direction === 'east') x -= speed;
+                        if (direction === 'west') x += speed;
+
+                        vehicle.style.transform = `translate(${x}px, ${y}px)`;
+
+                        // Eliminar al salir
+                        if (y < -50 || y > 550 || x < -50 || x > 550) {
+                            vehicle.remove();
+                            return;
+                        }
+                    }
+                    requestAnimationFrame(move);
+                }
+                move();
+            }
+
+            simulationInterval = setInterval(() => {
+                const directions = ['north', 'south', 'east', 'west'];
+                createVehicle(directions[Math.floor(Math.random() * 4)]);
+            }, 1500);
         }
 
-        simulationInterval = setInterval(() => {
-            const directions = ['north', 'south', 'east', 'west'];
-            createVehicle(directions[Math.floor(Math.random() * 4)]);
-        }, 1500);
-    }
+        document.getElementById('stop-iteration').addEventListener('click', function() {
+            isSimulationRunning = false; // Cambiar el estado de la simulación
+            clearInterval(simulationInterval); // Detener la generación de vehículos
+            clearTimeout(lightTimeout); // Detener los cambios de semáforo
 
-    document.getElementById('stop-iteration').addEventListener('click', function() {
-        isSimulationRunning = false; // Cambiar el estado de la simulación
-        clearInterval(simulationInterval); // Detener la generación de vehículos
-        clearTimeout(lightTimeout); // Detener los cambios de semáforo
+            // Apagar todos los semáforos (rojo por defecto)
+            document.querySelectorAll('.sim-bulb').forEach(bulb => bulb.classList.remove('active'));
+            document.querySelectorAll('.sim-red').forEach(red => red.classList.add('active'));
 
-        // Apagar todos los semáforos (rojo por defecto)
-        document.querySelectorAll('.sim-bulb').forEach(bulb => bulb.classList.remove('active'));
-        document.querySelectorAll('.sim-red').forEach(red => red.classList.add('active'));
-
-        // Restaurar los botones
-        document.getElementById('start-iteration').disabled = false;
-        document.getElementById('stop-iteration').disabled = true;
-    });
-</script>
+            // Restaurar los botones
+            document.getElementById('start-iteration').disabled = false;
+            document.getElementById('stop-iteration').disabled = true;
+        });
+    </script>
 </body>
 
 </html>
