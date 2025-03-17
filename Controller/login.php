@@ -44,11 +44,19 @@
 
         }
         else{
-            echo 'El nombre o la contraseña invalida';
+            echo '<script>';
+        echo 'alert("Error campo vacío Intente nuevamente");';
+        echo '</script>';
+
+        echo '<script> location.href="../index.php"; </script>';
         }
         
     }else{
-        echo 'Error campo vacío<br>Intente nuevamente';
+        echo '<script>';
+        echo 'alert("Error campo vacío Intente nuevamente");';
+        echo '</script>';
+
+        echo '<script> location.href="../index.php"; </script>';
     }
     //echo 'Error nombre o contraseña inválido';
     echo '<script>';
