@@ -34,7 +34,7 @@
                     }
 
                     $nombre = $_SESSION["user"];
-                    echo '<span class="admin-badge">Supervisor: ' . htmlspecialchars($nombre, ENT_QUOTES, 'UTF-8') . '</span>';
+                    echo '<span class="admin-badge">Administrador: ' . htmlspecialchars($nombre, ENT_QUOTES, 'UTF-8') . '</span>';
                     ?>
 
                 </a>
