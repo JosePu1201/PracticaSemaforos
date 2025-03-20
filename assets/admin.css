@@ -517,7 +517,7 @@ body::before {
 .sim-vehicle {
     position: absolute;
     width: 20px;
-    height: 30px;
+    height: 100px;
     background-color: #666;
     border-radius: 4px;
     transition: all 0.1s linear;

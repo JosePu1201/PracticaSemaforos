@@ -98,7 +98,11 @@
                                     </div>
                                     <div class="summary-text">
                                         <div>Total Usuarios</div>
-                                        <div class="summary-count">128</div>
+                                        <?php
+                                        $salida = ejecutarSQL::consultar("SELECT COUNT(id_usuario) AS total FROM Usuario WHERE id_rol = 2 OR id_rol = 3");
+                                        $total = mysqli_fetch_array($salida);
+                                        echo '<div class="summary-count">' . $total['total'] . '</div>';
+                                        ?>
                                     </div>
                                 </div>
                             </div>
@@ -108,8 +112,13 @@
                                         <i class="fas fa-road"></i>
                                     </div>
                                     <div class="summary-text">
-                                        <div>Total Calles</div>
-                                        <div class="summary-count">45</div>
+                                        <div>Total Intersecciones</div>
+                                        <?php
+                                        $salida = ejecutarSQL::consultar("SELECT COUNT(id) AS total FROM Interseccion");
+                                        $total = mysqli_fetch_array($salida);
+                                        echo '<div class="summary-count">' . $total['total'] . '</div>';
+                                        ?>
+
                                     </div>
                                 </div>
                             </div>
@@ -120,7 +129,11 @@
                                     </div>
                                     <div class="summary-text">
                                         <div>Semáforos Activos</div>
-                                        <div class="summary-count">62</div>
+                                        <?php
+                                        $salida = ejecutarSQL::consultar("SELECT COUNT(id) AS total FROM Semaforo");
+                                        $total = mysqli_fetch_array($salida);
+                                        echo '<div class="summary-count">' . $total['total'] . '</div>';
+                                        ?>
                                     </div>
                                 </div>
                             </div>
@@ -150,66 +163,109 @@
             <!-- Formulario de Usuario (Ejemplo) -->
             <div class="form-container" id="userForm">
                 <div class="form-header">
-                    <h4 class="form-title"><i class="fas fa-user-cog me-2"></i>Nuevo Usuario</h4>
+                    <h4 class="form-title"><i class="fas fa-user-cog me-2"></i>Gestión de Usuarios</h4>
                     <button class="form-close">&times;</button>
                 </div>
-                <form action="../Controller/newUser.php" method="post" role="form" class="FormCatElec" data-form="login">
-                    <div class="form-group">
-                        <label>Usuario</label>
-                        <input type="text" class="input-field" required name="usuarioNuevo"> Sin espacios
-                    </div>
-                    <div class="form-group">
-                        <label>Nombre de usuario</label>
-                        <input type="text" class="input-field" required name="nombreUserNuevo">
-                    </div>
-                    <div class="form-group">
-                        <label>Correo electrónico</label>
-                        <input type="email" class="input-field" required name="emailNuevo">
-                    </div>
-                    <div class="form-group">
-                        <label>Contrasenea</label>
-                        <input type="password" class="input-field" name="newPass" placeholder="Ingresa tu contraseña" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Tipo de usuario</label>
-                        <select class="input-field" name="rolNuevo" required>
-                            <option value="">Seleccionar rol</option>
-                            <option value="monitor">Monitor</option>
-                            <option value="supervisor">Supervisor</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="form-submit-btn btn-user-submit">
-                        <i class="fas fa-save me-2"></i>Guardar Usuario
-                    </button>
-                </form>
+                <div class="form-actions">
+                    <button class="btn btn-primary me-2" onclick="showCreateUserForm()">Crear Usuario</button>
+                    <button class="btn btn-secondary" onclick="showUserList()">Listar Usuarios</button>
+                </div>
+                <div id="createUserForm" style="display: none;">
+                    <form action="../Controller/newUser.php" method="post" role="form" class="FormCatElec" data-form="login">
+                        <div class="form-group">
+                            <label>Usuario</label>
+                            <input type="text" class="input-field" required name="usuarioNuevo"> Sin espacios
+                        </div>
+                        <div class="form-group">
+                            <label>Nombre de usuario</label>
+                            <input type="text" class="input-field" required name="nombreUserNuevo">
+                        </div>
+                        <div class="form-group">
+                            <label>Correo electrónico</label>
+                            <input type="email" class="input-field" required name="emailNuevo">
+                        </div>
+                        <div class="form-group">
+                            <label>Contraseña</label>
+                            <input type="password" class="input-field" name="newPass" placeholder="Ingresa tu contraseña" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Tipo de usuario</label>
+                            <select class="input-field" name="rolNuevo" required>
+                                <option value="">Seleccionar rol</option>
+                                <option value="monitor">Monitor</option>
+                                <option value="supervisor">Supervisor</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="form-submit-btn btn-user-submit">
+                            <i class="fas fa-save me-2"></i>Guardar Usuario
+                        </button>
+                    </form>
+                </div>
+                <div id="userList" style="display: none;">
+                    <h5>Lista de Usuarios</h5>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Usuario</th>
+                                <th>Nombre</th>
+                                <th>Correo</th>
+                                <th>Rol</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userTableBody">
+                            <!-- Aquí se llenará la tabla con los usuarios -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
             <!-- formulario para la creacion de interseccion -->
             <div class="form-container" id="vias">
-
-
-
                 <div class="form-header">
-                    <h4 class="form-title"><i class="fas fa-user-cog me-2"></i>Nueva Interseccion</h4>
+                    <h4 class="form-title"><i class="fas fa-road me-2"></i>Gestión de Intersecciones</h4>
                     <button class="form-close">&times;</button>
                 </div>
-                <img src="../assets/calles.jpeg" alt="Calles" class="form-img">
-                <form action="../Controller/newInterseccion.php" method="post" role="form" class="FormCatElec" data-form="login">
-                    <div class="form-group">
-                        <label>Número calle</label>
-                        <input type="number" name="calle" class="input-field" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Número avenida</label>
-                        <input type="number" name="numAv" class="input-field" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Número Zona</label>
-                        <input type="number" name="numZona" class="input-field" required>
-                    </div>
-                    <button type="submit" class="form-submit-btn btn-user-submit">
-                        <i class="fas fa-save me-2"></i>Guardar Interseccion
-                    </button>
-                </form>
+                <div class="form-actions">
+                    <button class="btn btn-primary me-2" onclick="showCreateIntersectionForm()">Crear Intersección</button>
+                    <button class="btn btn-secondary" onclick="showIntersectionList()">Listar Intersecciones</button>
+                </div>
+                <div id="createIntersectionForm" style="display: none;">
+                    <img src="../assets/calles.jpeg" alt="Calles" class="form-img">
+                    <form action="../Controller/newInterseccion.php" method="post" role="form" class="FormCatElec" data-form="login">
+                        <div class="form-group">
+                            <label>Número calle</label>
+                            <input type="number" name="calle" class="input-field" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Número avenida</label>
+                            <input type="number" name="numAv" class="input-field" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Número Zona</label>
+                            <input type="number" name="numZona" class="input-field" required>
+                        </div>
+                        <button type="submit" class="form-submit-btn btn-user-submit">
+                            <i class="fas fa-save me-2"></i>Guardar Intersección
+                        </button>
+                    </form>
+                </div>
+                <div id="intersectionList" style="display: none;">
+                    <h5>Lista de Intersecciones</h5>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Calle</th>
+                                <th>Avenida</th>
+                                <th>Zona</th>
+                                <th>Nombre</th>
+                            </tr>
+                        </thead>
+                        <tbody id="intersectionTableBody">
+                            <!-- Aquí se llenará la tabla con las intersecciones -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
             <style>
                 .form-container {
@@ -232,43 +288,68 @@
             </style>
 
             <!-- formulario para la creacion de semaforos -->
+
             <div class="form-container" id="semaforo">
                 <div class="form-header">
-                    <h4 class="form-title"><i class="fas fa-user-cog me-2"></i>Nuevo Semaforo</h4>
+                    <h4 class="form-title"><i class="fas fa-traffic-light me-2"></i>Gestión de Semáforos</h4>
                     <button class="form-close">&times;</button>
                 </div>
-                <img src="../assets/semaforos.jpeg" alt="Calles" class="form-img">
-                <form action="../Controller/newSemaforo.php" method="post" role="form" class="FormCatElec" data-form="login">
-                    <div class="form-group">
-                        <label>Número de interseccion</label>
-                        <input type="number" name="interseccion" class="input-field" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Tiempo para color Verde</label>
-                        <input type="number" name="timeGreen" class="input-field" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Tiempo para color amarillo</label>
-                        <input type="number" name="timeYellow" class="input-field" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Tiempo para color Rojo</label>
-                        <input type="number" name="timeRed" class="input-field" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Tipo de usuario</label>
-                        <select class="input-field" name="direccion" required>
-                            <option value="">Seleccionar Direccion</option>
-                            <option value="norte">Norte</option>
-                            <option value="sur">Sur</option>
-                            <option value="este">Este</option>
-                            <option value="oeste">Oeste</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="form-submit-btn btn-user-submit">
-                        <i class="fas fa-save me-2"></i>Guardar Interseccion
-                    </button>
-                </form>
+                <div class="form-actions">
+                    <button class="btn btn-primary me-2" onclick="showCreateSemaforoForm()">Crear Semáforo</button>
+                    <button class="btn btn-secondary" onclick="showSemaforoList()">Listar Semáforos</button>
+                </div>
+                <div id="createSemaforoForm" style="display: none;">
+                    <img src="../assets/semaforos.jpeg" alt="Calles" class="form-img">
+                    <form action="../Controller/newSemaforo.php" method="post" role="form" class="FormCatElec" data-form="login">
+                        <div class="form-group">
+                            <label>Número de intersección</label>
+                            <input type="number" name="interseccion" class="input-field" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Tiempo para color Verde</label>
+                            <input type="number" name="timeGreen" class="input-field" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Tiempo para color Amarillo</label>
+                            <input type="number" name="timeYellow" class="input-field" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Tiempo para color Rojo</label>
+                            <input type="number" name="timeRed" class="input-field" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Dirección</label>
+                            <select class="input-field" name="direccion" required>
+                                <option value="">Seleccionar Dirección</option>
+                                <option value="norte">Norte</option>
+                                <option value="sur">Sur</option>
+                                <option value="este">Este</option>
+                                <option value="oeste">Oeste</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="form-submit-btn btn-user-submit">
+                            <i class="fas fa-save me-2"></i>Guardar Semáforo
+                        </button>
+                    </form>
+                </div>
+                <div id="semaforoList" style="display: none;">
+                    <h5>Lista de Semáforos</h5>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Intersección</th>
+                                <th>Dirección</th>
+                                <th>Verde</th>
+                                <th>Amarillo</th>
+                                <th>Rojo</th>
+                            </tr>
+                        </thead>
+                        <tbody id="semaforoTableBody">
+                            <!-- Aquí se llenará la tabla con los semáforos -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
 
@@ -316,6 +397,124 @@
                 closeBtn.closest('.form-container').style.display = 'none';
             });
         });
+
+        function showCreateUserForm() {
+            document.getElementById('createUserForm').style.display = 'block';
+            document.getElementById('userList').style.display = 'none';
+        }
+
+        function showUserList() {
+            document.getElementById('createUserForm').style.display = 'none';
+            document.getElementById('userList').style.display = 'block';
+
+            // Llamar a la función para cargar la lista de usuarios
+            fetchUserList();
+        }
+
+        async function fetchUserList() {
+            const response = await fetch('../Controller/getUsers.php', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            const users = await response.json();
+
+            const userTableBody = document.getElementById('userTableBody');
+            userTableBody.innerHTML = ''; // Limpiar la tabla antes de llenarla
+            let contador = 1;
+            users.forEach(user => {
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+            <td>${contador}</td>
+            <td>${user.id}</td>
+            <td>${user.nombre}</td>
+            <td>${user.correo}</td>
+            <td>${user.rol}</td>
+        `;
+                userTableBody.appendChild(row);
+                contador++;
+            });
+        }
+
+        function showCreateIntersectionForm() {
+            document.getElementById('createIntersectionForm').style.display = 'block';
+            document.getElementById('intersectionList').style.display = 'none';
+        }
+
+        function showIntersectionList() {
+            document.getElementById('createIntersectionForm').style.display = 'none';
+            document.getElementById('intersectionList').style.display = 'block';
+
+            // Llamar a la función para cargar la lista de intersecciones
+            fetchIntersectionList();
+        }
+
+        async function fetchIntersectionList() {
+            const response = await fetch('../Controller/getIntersections.php', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            const intersections = await response.json();
+
+            const intersectionTableBody = document.getElementById('intersectionTableBody');
+            intersectionTableBody.innerHTML = ''; // Limpiar la tabla antes de llenarla
+            let contador = 1;
+            intersections.forEach(intersection => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+            <td>${contador}</td>
+            <td>${intersection.calle}</td>
+            <td>${intersection.avenida}</td>
+            <td>${intersection.zona}</td>
+            <th>${intersection.nombre}</th>
+        `;
+                intersectionTableBody.appendChild(row);
+                contador++;
+            });
+        }
+        function showCreateSemaforoForm() {
+    document.getElementById('createSemaforoForm').style.display = 'block';
+    document.getElementById('semaforoList').style.display = 'none';
+}
+
+function showSemaforoList() {
+    document.getElementById('createSemaforoForm').style.display = 'none';
+    document.getElementById('semaforoList').style.display = 'block';
+
+    // Llamar a la función para cargar la lista de semáforos
+    fetchSemaforoList();
+}
+
+async function fetchSemaforoList() {
+    const response = await fetch('../Controller/getSemaforosAdmin.php', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
+    const semaforos = await response.json();
+
+    const semaforoTableBody = document.getElementById('semaforoTableBody');
+    semaforoTableBody.innerHTML = ''; // Limpiar la tabla antes de llenarla
+    let contador = 1;
+    semaforos.forEach(semaforo => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${contador}</td>
+            <td>${semaforo.interseccion}</td>
+            <td>${semaforo.direccion}</td>
+            <td>${semaforo.tiempoVerde}</td>
+            <td>${semaforo.tiempoAmarillo}</td>
+            <td>${semaforo.tiempoRojo}</td>
+        `;
+        semaforoTableBody.appendChild(row);
+        contador++;
+    });
+}
     </script>
 </body>
 

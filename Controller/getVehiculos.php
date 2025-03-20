@@ -12,7 +12,8 @@ while ($vehiculo = mysqli_fetch_array($vehiculos)) {
     $vehiculosArray[] = array(
         'tipo' => $vehiculo['tipo'],
         'placa' => $vehiculo['placa'],
-        'direccion' => $vehiculo['direccion']
+        'direccion' => $vehiculo['direccion'],
+        'velocidad' => $vehiculo['velocidad'],
     );
 }
 

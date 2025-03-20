@@ -438,6 +438,7 @@
             console.log("Iteración iniciada a las: " + inicioIteracion);
         }
         let vehiculosInfo = [];
+
         function finalizarIteracion() {
             const finIteracion = new Date().toISOString();
             console.log("Iteración finalizada a las: " + finIteracion);
@@ -621,15 +622,15 @@
                 west: []
             };
 
-            function createVehicle(direction) {
+            function createVehicle(direction, nameV, velocidad) {
                 if (!isSimulationRunning) return; // Detener la creación si la simulación está apagada
 
-                const vehicleElem = document.createElement('div');
-                vehicleElem.className = `sim-vehicle ${direction}`;
+                const vehicleElem = document.createElement('div'); //Crea el elemento del vehículo
+                vehicleElem.className = `sim-vehicle ${direction}`; //crea el vehiculos
                 document.querySelector('.sim-intersection').appendChild(vehicleElem);
 
                 let x, y;
-                const speed = 2;
+                const speed = velocidad;
                 if (direction === 'north') {
                     x = 250;
                     y = -30;
@@ -647,6 +648,7 @@
                 // Creamos el objeto vehículo con los datos de llegada
                 const vehicleObj = {
                     element: vehicleElem,
+                    name: nameV,
                     x: x,
                     y: y,
                     speed: speed,
@@ -692,19 +694,23 @@
                     // Si el vehículo sale del área visible, lo eliminamos y actualizamos la cola
                     if (vehicleObj.y < -50 || vehicleObj.y > 550 || vehicleObj.x < -50 || vehicleObj.x > 550) {
                         const timeTaken = (Date.now() - vehicleObj.arrivalTime) / 1000; // En segundos
-                        console.log(`El vehículo de dirección ${direction} pasó en ${timeTaken} segundos`);
+                        console.log(`El vehículo de dirección ${direction} pasó en ${timeTaken} segundos ${vehicleObj.name}`);
                         vehiculosInfo.push({
                             direccion: direction,
-                            tiempo: timeTaken
+                            tiempo: timeTaken,
+                            carro: vehicleObj.name
                         });
                         vehicleObj.element.remove();
                         vehicleQueues[direction].shift();
+                        verificarColas();
                         // Iniciar el siguiente vehículo de la cola con un pequeño retraso
                         if (vehicleQueues[direction].length > 0) {
                             setTimeout(() => {
                                 moveVehicle(vehicleQueues[direction][0], direction);
                             }, 500);
                         }
+
+
                         return;
                     }
 
@@ -712,12 +718,67 @@
                 }
                 animate();
             }
-            simulationInterval = setInterval(() => {
+            cargarVehiculos();
+            /*simulationInterval = setInterval(() => {
                 const directions = ['north', 'south', 'east', 'west'];
-                createVehicle(directions[Math.floor(Math.random() * 4)]);
-            }, 1500);
-        }
+                createVehicle(directions[Math.floor(Math.random() * 4)],"hola");
+            }, 1500);*/
 
+            async function cargarVehiculos() {
+                const interseccionId = document.getElementById('interseccionSeleccionada').value;
+                const carros = await fetchVehiculosCarga(interseccionId); // Espera a que se resuelva la promesa
+                console.log('Vehículos cargados:', carros); // Ahora puedes acceder a los datos
+                carros.forEach(carro => {
+                    switch (carro.direccion) {
+                        case 'N':
+                            createVehicle('north', carro.placa, carro.velocidad);
+                            break;
+                        case 'S':
+                            createVehicle('south', carro.placa, carro.velocidad);
+                            break;
+                        case 'E':
+                            createVehicle('east', carro.placa, carro.velocidad);
+                            break;
+                        case 'O':
+                            createVehicle('west', carro.placa, carro.velocidad);
+                            break;
+                    }
+                });
+
+            }
+
+            function verificarColas() {
+                if (Object.values(vehicleQueues).every(queue => queue.length === 0)) {
+                    isSimulationRunning = false; // Cambiar el estado de la simulación
+                    clearInterval(simulationInterval); // Detener la generación de vehículos
+                    clearTimeout(lightTimeout); // Detener los cambios de semáforo
+
+                    // Apagar todos los semáforos (rojo por defecto)
+                    document.querySelectorAll('.sim-bulb').forEach(bulb => bulb.classList.remove('active'));
+                    document.querySelectorAll('.sim-red').forEach(red => red.classList.add('active'));
+
+                    // Restaurar los botones
+                    document.getElementById('start-iteration').disabled = false;
+                    document.getElementById('stop-iteration').disabled = true;
+                    finalizarIteracion();
+                }
+
+            }
+
+        }
+        async function fetchVehiculosCarga(interseccionId) {
+            const response = await fetch('../Controller/getVehiculos.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `interseccionId=${interseccionId}`
+            });
+
+            const vehiculos = await response.json();
+            // console.log(vehiculos); // Imprime los vehículos obtenidos
+            return vehiculos;
+        }
         document.getElementById('stop-iteration').addEventListener('click', function() {
             isSimulationRunning = false; // Cambiar el estado de la simulación
             clearInterval(simulationInterval); // Detener la generación de vehículos

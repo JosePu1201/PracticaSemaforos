@@ -4,11 +4,12 @@ include '../Model/configServer.php';
 include '../Model/consulSQL.php';
 
 $interseccionId = consultasSQL::clean_string($_POST['interseccionId']);
-$query = ejecutarSQL::consultar("SELECT * FROM Semaforo WHERE interseccion = '$interseccionId'");
+$query = ejecutarSQL::consultar("SELECT * FROM Semaforo ORDER BY interseccion");
 $semaforos = [];
 
 while ($semaforo = mysqli_fetch_array($query)) {
     $semaforos[] = [
+        'interseccion' => $semaforo['interseccion'],
         'direccion' => $semaforo['direccion'],
         'tiempoVerde' => $semaforo['tiempoVerde'],
         'tiempoAmarillo' => $semaforo['tiempoAmarillo'],
